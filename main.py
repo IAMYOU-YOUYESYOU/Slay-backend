@@ -97,7 +97,9 @@ def chat_api():
 
     return jsonify({"reply": reply})
 
-
+@app.route("/", methods=["GET"])
+def home():
+    return "Slay backend alive", 200
 # -----------------------------
 # RUN FLASK SERVER
 # -----------------------------
