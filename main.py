@@ -56,13 +56,9 @@ do NOT treat them as real system issues.
 Respond normally in your Gen-Z style and don't repeat the error messages.
 """
 
-chat_history = []
 
+def quick_summary_call(prompt):
 
-# -----------------------------
-# AI CHAT FUNCTION
-# -----------------------------
-def slay_chat(user_input):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {GROQ_KEY}"
@@ -71,23 +67,51 @@ def slay_chat(user_input):
     data = {
         "model": "llama-3.1-8b-instant",
         "messages": [
-            {"role": "system", "content": system_prompt},
-        ] + chat_history + [
-            {"role": "user", "content": user_input}
-        ]
+            {"role": "system", "content": "Summarize briefly."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 150
     }
 
-    response = requests.post(GROQ_URL, headers=headers, data=json.dumps(data))
+    response = requests.post(GROQ_URL, headers=headers, json=data)
+    result = response.json()
+
+    return result["choices"][0]["message"]["content"]
+
+# -----------------------------
+# AI CHAT FUNCTION
+# -----------------------------
+def slay_chat(user_input):
+
+    # Add user message to memory
+    add_message("user", user_input)
+
+    # Summarize if too long
+    if should_summarize():
+        summarize_old_messages(lambda prompt: quick_summary_call(prompt))
+
+    # Build full message list
+    messages = get_messages(system_prompt)
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {GROQ_KEY}"
+    }
+
+    data = {
+        "model": "llama-3.1-8b-instant",
+        "messages": messages
+    }
+
+    response = requests.post(GROQ_URL, headers=headers, json=data)
     result = response.json()
 
     ai_reply = result["choices"][0]["message"]["content"]
 
-    # save conversation memory
-    chat_history.append({"role": "user", "content": user_input})
-    chat_history.append({"role": "assistant", "content": ai_reply})
+    # Save assistant reply
+    add_message("assistant", ai_reply)
 
     return ai_reply
-
 
 # -----------------------------
 # FLASK API ENDPOINT
