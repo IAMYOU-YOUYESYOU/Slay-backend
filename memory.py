@@ -3,8 +3,8 @@
 conversation_history = []
 memory_summary = ""
 
-MAX_HISTORY = 12
-SUMMARY_CHUNK = 6
+MAX_HISTORY = 10
+SUMMARY_CHUNK = 5
 
 def add_message(role, content):
     global conversation_history
