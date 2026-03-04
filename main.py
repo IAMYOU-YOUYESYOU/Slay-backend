@@ -3,6 +3,7 @@ import requests
 import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from memory import add_message, should_summarize, summarize_old_messages, get_messages
 
 app = Flask(__name__)
 CORS(app)
